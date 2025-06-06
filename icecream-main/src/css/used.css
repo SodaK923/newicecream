@@ -1,0 +1,14 @@
+.usedItem {
+    display: flex;
+    flex-direction: column;
+    /* 세로 정렬 */
+    align-items: center;
+    /* 가운데 정렬 */
+    gap: 8px;
+    /* 요소들 사이 간격 */
+    border: 1px solid #ccc;
+    padding: 12px;
+    margin: 10px;
+    width: 160px;
+    /* 원하는 크기로 조절 */
+}
