@@ -181,7 +181,7 @@ export function UsedDetail() {
                         <Carousel indicators={images.length > 1}>
                             {images.length === 0 ? (
                                 <Carousel.Item>
-                                    <div className="text-center p-5">이미지가 없습니다.</div>
+                                    <div className="text-center text-muted p-5">이미지가 없습니다.</div>
                                 </Carousel.Item>
                             ) : (
                                 images.map((img, idx) => (

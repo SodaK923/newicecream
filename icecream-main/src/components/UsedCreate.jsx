@@ -5,10 +5,12 @@ import { useImage } from "../hooks/useImage";
 //import { getUser } from '../utils/getUser';
 import { useUserTable } from "../hooks/useUserTable";
 import { useRegion } from "../hooks/useRegion";
+//import { useParams } from "react-router-dom";
 
 export function UsedCreate() {
     const now = new Date().toISOString();
     const navigate = useNavigate();
+    //const {item} = useParams();
 
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
@@ -27,6 +29,13 @@ export function UsedCreate() {
     // 상세정보 테이블에서 가져올수도..
     const { city, district } = useRegion();
     const location = `${city} ${district}`;
+
+    // 카테고리 숫자->문자열로 변환
+    const CATEGORY_MAP = {
+        4: "sell",    // 중고거래
+        5: "share",     // 구매
+        6: "buy"  // 나눔
+    };
 
     // getUser
     // useEffect(() => {
@@ -98,8 +107,6 @@ export function UsedCreate() {
             return;
         }
 
-
-
         const { data, error } = await supabase
             .from('trades')
             .insert([{
@@ -116,7 +123,7 @@ export function UsedCreate() {
                 category_id: Number(category),
                 super_category_id: 3,
                 create_date: now,
-                update_date: now, //null로 햇더니 오류남
+                update_date: now, //null로 햇더니 오류남 -> 이게 맞댄다
                 cnt: 0,
                 state: 1,
                 // 공구에 들어가는 내용->null
@@ -126,12 +133,16 @@ export function UsedCreate() {
                 limit: null,
             }])
             .select()
+            .single();
         if (error) {
             console.log('error', error);
-        } if (data) {
+        } if (data && data.id) {
             //console.log(data)
             // todo: 글작성한 카테고리로 자동 이동하게 하기
-            navigate('/trade/sell');
+            // 숫자->문자열로 변환
+            const categoryString = CATEGORY_MAP[category];
+            const newItem = data.id;
+            navigate(`/trade/${categoryString}/${newItem}`);
         }
     }
     //console.log(images);

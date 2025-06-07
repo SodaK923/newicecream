@@ -30,6 +30,13 @@ export function UsedUpdate() {
     // useUserTable 훅
     const { info: userInfo, loading, error } = useUserTable();
 
+    // 카테고리 숫자->문자열로 변환
+    const CATEGORY_MAP = {
+        4: "sell",    // 중고거래
+        5: "share",     // 구매
+        6: "buy"  // 나눔
+    };
+
     // 지역 정보인데 쓸 지 안쓸 지 모르겠음..
     // const { city, district } = useRegion();
     // const location = `${city} ${district}`;
@@ -151,13 +158,16 @@ export function UsedUpdate() {
                 //location
             })
             .eq('id', item)
-            .select();
+            .select()
+            .single();
         if (error) {
             console.log('error', error);
         } if (data) {
             //console.log(data)
             // todo: 글작성한 카테고리로 자동 이동하게 하기
-            navigate('/trade/sell');
+            const categoryString=CATEGORY_MAP[category];
+            const newItem=data.id;
+            navigate(`/trade/${categoryString}/${newItem}`);
         }
     }
 
