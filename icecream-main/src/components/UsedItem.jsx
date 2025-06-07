@@ -29,17 +29,26 @@ export function UsedItem({ used }) {
             onClick={handleDetail}
         >
             <div style={{ width: "100%", height: 180, overflow: "hidden", borderRadius: "1rem 1rem 0 0" }}>
-                <Card.Img
+                {used.main_img ? (<Card.Img
                     variant="top"
                     src={used.main_img}
                     style={{ width: "100%", height: "100%", objectFit: "cover" }}
                     alt="썸네일"
-                />
+                />) : (<div className="text-center p-5 text-muted" style={{
+                    width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center"
+                }}>
+                    이미지가 없습니다.
+                </div>)}
+
             </div>
             <Card.Body className="p-3 d-flex flex-column justify-content-between" style={{ height: 180 }}>
                 <div>
                     <div className="text-secondary small mb-1" style={{ height: 20, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                        거래&gt;{used.categories?.name} 
+                        거래&gt;{used.categories?.name}
                     </div>
                     <Card.Title className="fw-bold fs-6 mb-1" style={{ minHeight: 22, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                         {used.title}

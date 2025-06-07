@@ -47,7 +47,7 @@ function App() {
             <Route path='/trade/sell' element={<UsedSell />} />
             <Route path='/trade/share' element={<UsedShare />} />
             <Route path='/trade/buy' element={<UsedBuy />} />
-            <Route path='/trade/write' element={<UsedCreate />} />
+            <Route path='/trade/deal/register' element={<UsedCreate />} />
             <Route path='/trade/:id/:item/update' element={<UsedUpdate />} />
             <Route path='/trade/:id/:item/order' element={<UsedOrder />} />
             {/* :id: 파라미터 */}

@@ -95,6 +95,8 @@ export function UsedDetail() {
         }
     }
 
+
+    // 구매하기/나눔받기/팔기 -> 판매자 채팅으로
     const makeChats = async () => {
         const { data, error } = await supabase
             .from('chats')
@@ -127,14 +129,14 @@ export function UsedDetail() {
                 </div>
             );
         } else {
-            //return <Button variant="outline-danger"><FaRegHeart /> 좋아요</Button>;
-            if (detail.category_id === 4) {
-                return <Button onClick={makeChats}>구매하기</Button>;
-            } else if (detail.category_id === 5) {
-                return <Button onClick={makeChats}>나눔받기</Button>;
-            } else {
-                return <Button onClick={makeChats}>팔기</Button>;
-            }
+            return (
+                <div>
+                    <Button variant="outline-danger"><FaRegHeart /> 좋아요</Button>
+                    {detail.category_id===4 && (<Button onClick={makeChats}>구매하기</Button>)}
+                    {detail.category_id===5 && (<Button onClick={makeChats}>나눔받기</Button>)}
+                    {detail.category_id===6 && (<Button onClick={makeChats}>팔기</Button>)}
+                </div>  
+            );
         }
     }
 
