@@ -1,8 +1,32 @@
 import { Card, Badge } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { supabase } from "../supabase/supabase";
+import { useEffect, useState } from "react";
 
 export function UsedItem({ used }) {
     const navigate = useNavigate();
+    const { item } = useParams();
+    const [likesCount, setLikesCount] = useState(0);    // 좋아요 수
+
+    useEffect(() => {
+        const fetchLikes = async () => {
+            const { count, error: likeCountError } = await supabase
+                    .from('likes')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('category_id', used.category_id)
+                    .eq('table_id', used.id);
+
+                if (!likeCountError) {
+                    setLikesCount(count);
+                } else {
+                    console.error('좋아요 수 불러오기 실패', likeCountError);
+                }
+
+                await supabase.rpc('increment_view_count', { trade_id: parseInt(item) });
+        }
+        fetchLikes();
+    }, [item]);
+
 
     const getDateDiff = (date) => {
         const created = new Date(date);
@@ -47,8 +71,11 @@ export function UsedItem({ used }) {
             </div>
             <Card.Body className="p-3 d-flex flex-column justify-content-between" style={{ height: 180 }}>
                 <div>
-                    <div className="text-secondary small mb-1" style={{ height: 20, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                        거래&gt;{used.categories?.name}
+                    <div className="d-flex justify-content-between align-items-end mt-auto">
+                        <span className="text-secondary small mb-1 " style={{ height: 20, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                            거래&gt;{used.categories?.name}
+                        </span>
+                        <span className="text-secondary small mb-1 ">조회수 {used.cnt} ❤️ {likesCount}  </span>
                     </div>
                     <Card.Title className="fw-bold fs-6 mb-1" style={{ minHeight: 22, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                         {used.title}
