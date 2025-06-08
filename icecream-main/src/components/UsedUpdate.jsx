@@ -9,7 +9,7 @@ import { Form, Button, FloatingLabel, InputGroup, Spinner, Image } from "react-b
 
 export function UsedUpdate() {
     // TODO: 수정 시간 업데이트
-    // const now = new Date().toISOString();
+    const now = new Date().toISOString();
     const navigate = useNavigate();
     // url에서 가져옴
     const { item } = useParams();
@@ -157,8 +157,7 @@ export function UsedUpdate() {
                 detail_img2: getFinalUrl(finalPics[2]),
                 detail_img3: getFinalUrl(finalPics[3]),
                 detail_img4: getFinalUrl(finalPics[4]),
-
-                //update_date: now,
+                update_date: now
                 //location
             })
             .eq('id', item)

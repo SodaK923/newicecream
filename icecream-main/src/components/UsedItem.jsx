@@ -45,6 +45,7 @@ export function UsedItem({ used }) {
     };
 
     const handleDetail = () => navigate(`${used.id}`);
+    const isEdited = used.create_date !== used.update_date;
 
     return (
         <Card
@@ -71,6 +72,7 @@ export function UsedItem({ used }) {
             </div>
             <Card.Body className="p-3 d-flex flex-column justify-content-between" style={{ height: 180 }}>
                 <div>
+                {/* TODO: 글씨 크기 좀 더 줄이기 */}
                     <div className="d-flex justify-content-between align-items-end mt-auto">
                         <span className="text-secondary small mb-1 " style={{ height: 20, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                             거래&gt;{used.categories?.name}
@@ -91,7 +93,7 @@ export function UsedItem({ used }) {
                             : `${Number(used.price).toLocaleString()}원`
                         }
                     </span>
-                    <span className="small text-muted">{used.location} · {getDateDiff(used.create_date)}</span>
+                    <span className="small text-muted">{used.location} · {getDateDiff(used.create_date)}{isEdited && ' (수정됨)'}</span>
                 </div>
             </Card.Body>
         </Card>
