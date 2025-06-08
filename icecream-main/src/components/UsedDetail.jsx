@@ -294,7 +294,8 @@ export function UsedDetail() {
         return "방금 전";
     }
 
-
+    const isEdited = detail.create_date !== detail.update_date;
+    const baseTime = isEdited ? detail.update_date : detail.create_date;
 
     return (
         <Card className="border-0" style={{ maxWidth: 1100, margin: "30px auto", borderRadius: 18 }}>
@@ -332,7 +333,7 @@ export function UsedDetail() {
                         <h4 className="fw-bold">{detail.title}</h4>
                         <div className="text-secondary mb-2">
                             {detail.categories?.name} · {detail.location}
-                            <span className="ms-3">{getDateDiff(detail.create_date)}</span>
+                            <span className="ms-3">{getDateDiff(baseTime)}{isEdited && (' (수정됨)')}</span>
                         </div>
                         <div className="mb-3 fs-4 fw-bold" style={{ color: "#333" }}>
                             {detail.category_id === 5

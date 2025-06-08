@@ -46,6 +46,7 @@ export function UsedItem({ used }) {
 
     const handleDetail = () => navigate(`${used.id}`);
     const isEdited = used.create_date !== used.update_date;
+    const baseTime = isEdited ? used.update_date : used.create_date;
 
     return (
         <Card
@@ -93,7 +94,7 @@ export function UsedItem({ used }) {
                             : `${Number(used.price).toLocaleString()}원`
                         }
                     </span>
-                    <span className="small text-muted">{used.location} · {getDateDiff(used.create_date)}{isEdited && ' (수정됨)'}</span>
+                    <span className="small text-muted">{used.location} · {getDateDiff(baseTime)}{isEdited && ' (수정됨)'}</span>
                 </div>
             </Card.Body>
         </Card>
