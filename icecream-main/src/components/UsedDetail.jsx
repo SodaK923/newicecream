@@ -255,7 +255,7 @@ export function UsedDetail() {
                         {isLiked ? "❤️" : "🤍"}
                         {isLiked ? " 좋아요 취소" : " 좋아요"}
                     </Button>
-                    {detail.category_id === 4 && (<Button onClick={makeChats}>구매하기</Button>)}
+                    {detail.category_id === 4 && (<Button size="sm" style={{ padding: "2px 12px", fontSize: 16 }} onClick={makeChats}>구매하기</Button>)}
                     {detail.category_id === 5 && (<Button onClick={makeChats}>나눔받기</Button>)}
                     {detail.category_id === 6 && (<Button onClick={makeChats}>팔기</Button>)}
                 </div>

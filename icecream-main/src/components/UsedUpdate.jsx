@@ -5,6 +5,7 @@ import { useImage } from "../hooks/useImage";
 //import { getUser } from '../utils/getUser';
 import { useUserTable } from "../hooks/useUserTable";
 //import { useRegion } from "../hooks/useRegion";
+import { Form, Button, FloatingLabel, InputGroup, Spinner, Image } from "react-bootstrap";
 
 export function UsedUpdate() {
     // TODO: 수정 시간 업데이트
@@ -42,14 +43,14 @@ export function UsedUpdate() {
     // const location = `${city} ${district}`;
 
 
-    // 로그인 안됐으면 튕기게
-    useEffect(() => {
-        console.log("userInfo:", userInfo, "loading:", loading);
-        if (!userInfo && !loading) {
-            alert('로그인해야 글작성이 가능합니다.');
-            navigate('/login');
-        }
-    }, [loading, userInfo]);
+    // 로그인 안됐으면 튕기게(중간에 로그아웃되면 막으라고 쓴 건데 효과없는 듯)
+    // useEffect(() => {
+    //     console.log("userInfo:", userInfo, "loading:", loading);
+    //     if (!userInfo && !loading) {
+    //         alert('로그인해야 글작성이 가능합니다.');
+    //         navigate('/login');
+    //     }
+    // }, [loading, userInfo]);
 
 
     // 드림해요-> 가격 내용 비움(썼다가 중간에 바꾸면 내용이 남으므로 비워줌)
@@ -122,7 +123,7 @@ export function UsedUpdate() {
         e.preventDefault();
 
         if (!userInfo) {
-            alert("로그인해야 글작성이 가능합니다.");
+            alert("로그인해야 글수정이 가능합니다.");
             navigate('/login');
             return;
         }
@@ -137,6 +138,9 @@ export function UsedUpdate() {
         }
         if (category !== "5" && !price) { // '나눔' 아니면 가격 필요
             alert("가격을 입력해주세요.");
+            return;
+        }
+        if(!confirm('게시글을 수정할까요?')){
             return;
         }
 
@@ -173,51 +177,121 @@ export function UsedUpdate() {
 
 
     return (
-        <div>
-            <form>
-                <select value={category} onChange={e => setCategory(e.target.value)}>
+    <div className="p-4 rounded-4 shadow-sm bg-white" style={{ maxWidth: 600, margin: "40px auto" }}>
+        <Form>
+            <Form.Group className="mb-3" controlId="category">
+                <Form.Label>글수정</Form.Label>
+                <Form.Select value={category} onChange={e => setCategory(e.target.value)} required>
                     <option value="">카테고리 선택</option>
                     <option value="4">벼룩해요</option>
                     <option value="5">드림해요</option>
                     <option value="6">구해요</option>
-                    {/* <option value="7">공구해요</option> */}
-                </select>
-                <input value={title} onChange={e => setTitle(e.target.value)} placeholder="제목" />
-                <textarea value={content} onChange={e => setContent(e.target.value)} placeholder="내용" />
-                <input
-                    value={category === "5" ? 0 : price}
-                    onChange={e => setPrice(e.target.value)}
-                    placeholder={category === "5" ? "나눔" : "가격"}
-                    disabled={category === "5"}
-                />
-                <input type="file" multiple accept="image/*" onChange={handleFileChange} />
-                {/* 사용자가 선택한 이미지와 업로드된 이미지 개수가 같아야함 */}
-                {fileCount !== images.length && (
-                    <div>이미지 업로드 중입니다...</div>
-                )}
-                {/* 기존이미지 업로드 */}
-                <div>
+                </Form.Select>
+            </Form.Group>
+
+            <Form.Group className="mb-3" controlId="title">
+                <FloatingLabel label="제목">
+                    <Form.Control
+                        type="text"
+                        value={title}
+                        onChange={e => setTitle(e.target.value)}
+                        placeholder="제목"
+                        required
+                    />
+                </FloatingLabel>
+            </Form.Group>
+
+            <Form.Group className="mb-3" controlId="content">
+                <FloatingLabel label="내용">
+                    <Form.Control
+                        as="textarea"
+                        style={{ minHeight: 120 }}
+                        value={content}
+                        onChange={e => setContent(e.target.value)}
+                        placeholder="내용"
+                        required
+                    />
+                </FloatingLabel>
+            </Form.Group>
+
+            <Form.Group className="mb-3" controlId="price">
+                <InputGroup>
+                    <Form.Control
+                        type="number"
+                        value={category === "5" ? 0 : price}
+                        onChange={e => setPrice(e.target.value)}
+                        placeholder={category === "5" ? "나눔" : "가격"}
+                        disabled={category === "5"}
+                        min={0}
+                        required={category !== "5"}
+                    />
+                    {category !== "5" && <InputGroup.Text>원</InputGroup.Text>}
+                </InputGroup>
+            </Form.Group>
+
+            {/* 기존 이미지 미리보기 */}
+            <Form.Group className="mb-3">
+                <Form.Label>기존 이미지</Form.Label>
+                <div className="d-flex flex-wrap gap-2 mt-1">
                     {exPics.length > 0 ? (
                         exPics.map((img, i) => (
-                            <img key={i} src={img} alt={`기존 이미지 ${i + 1}`} style={{ width: '100px' }} />
-                            // src={getImages(img)}가 아니라, DB에 URL이 저장돼 있으면 그냥 img만
-                            // 만약 DB에는 상대경로만 있으면 src={getImages(img)}
+                            <Image
+                                key={i}
+                                src={img}
+                                alt={`기존 이미지 ${i + 1}`}
+                                style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: 12, border: "1px solid #eee" }}
+                                thumbnail
+                            />
                         ))
                     ) : (
-                        <div>기존 이미지 없음</div>
+                        <div className="text-muted">기존 이미지 없음</div>
                     )}
                 </div>
+            </Form.Group>
 
-                {/* 업로드하는 사진 보여줌 */}
-                <div>
+            {/* 새 이미지 업로드 */}
+            <Form.Group className="mb-3" controlId="images">
+                <Form.Label>이미지 업로드</Form.Label>
+                <Form.Control
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleFileChange}
+                />
+                <div className="form-text mt-1 text-muted" style={{ fontSize: 14 }}>
+                    ※ 이미지는 최대 5장까지 업로드할 수 있습니다.<br />
+                    <span className="text-secondary">가장 먼저 선택한 이미지가 대표이미지로 설정됩니다.</span>
+                </div>
+                {fileCount !== images.length && (
+                    <div className="mt-2 text-secondary d-flex align-items-center gap-2">
+                        <Spinner animation="border" size="sm" />
+                        이미지 업로드 중입니다...
+                    </div>
+                )}
+                <div className="d-flex flex-wrap gap-2 mt-3">
                     {images.length > 0 && images.map((img, idx) => (
-                        <img key={idx} src={getImages(img)} alt={`이미지${idx + 1}`} style={{ width: '100px' }} />
+                        <Image
+                            key={idx}
+                            src={getImages(img)}
+                            alt={`업로드 이미지${idx + 1}`}
+                            style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: 12, border: "1px solid #eee" }}
+                            thumbnail
+                        />
                     ))}
                 </div>
-                {/* 파일 개수가 맞을 때까지 등록버튼 꺼짐 */}
-                {/* <button onClick={handleCreate} disabled={fileCount !== images.length || images.length === 0}>등록</button> */}
-                <button onClick={handleUpdate}>수정</button>
-            </form>
-        </div>
-    )
+            </Form.Group>
+
+            <div className="d-grid gap-2 mt-4">
+                <Button
+                    style={{ background: "var(--base-color-5)", border: "none" }}
+                    size="lg"
+                    onClick={handleUpdate}
+                    disabled={images.length > 0 && fileCount !== images.length}
+                >
+                    수정
+                </Button>
+            </div>
+        </Form>
+    </div>
+);
 }

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabase/supabase";
 import { useImage } from "../hooks/useImage";
-//import { getUser } from '../utils/getUser';
+import { getUser } from '../utils/getUser';
 import { useUserTable } from "../hooks/useUserTable";
 import { useRegion } from "../hooks/useRegion";
 //import { useParams } from "react-router-dom";
@@ -38,24 +38,25 @@ export function UsedCreate() {
         6: "buy"  // 나눔
 };
 
-    // getUser
-    // useEffect(() => {
-    //     (async () => {
-    //         const { user } = await getUser();
-    //         if (!user) {
-    //             alert('로그인해야 글작성이 가능합니다.');
-    //             navigate('/login');
-    //         }
-    //     })();
-    // }, []);
-
     useEffect(() => {
-        console.log("userInfo:", userInfo, "loading:", loading);
-        if (!userInfo && !loading) {
-            alert('로그인해야 글작성이 가능합니다.');
-            navigate('/login');
-        }
-    }, [loading, userInfo]);
+        (async () => {
+            const { user } = await getUser();
+            if (!user) {
+                alert('로그인해야 글작성이 가능합니다.');
+                navigate('/login');
+            }
+        })();
+    }, []);
+
+
+    // 중간에 로그아웃되면 막으라고 쓴 건데 효과없는 듯
+    // useEffect(() => {
+    //     console.log("userInfo:", userInfo, "loading:", loading);
+    //     if (!userInfo && !loading) {
+    //         alert('로그인해야 글작성이 가능합니다.');
+    //         navigate('/login');
+    //     }
+    // }, [loading, userInfo]);
 
 
     // 드림해요-> 가격 내용 비움
@@ -265,5 +266,5 @@ export function UsedCreate() {
             </Form >
         </div >
 
-    )
+    );
 }
