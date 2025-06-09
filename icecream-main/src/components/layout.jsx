@@ -1,40 +1,70 @@
-import styles from "../css/layout.module.css"
-import logo from '../logo.png';
-import React, { useCallback } from 'react';
-import { useNavigate, useLocation, matchPath, useParams } from 'react-router-dom';
+import React, { useCallback, useEffect, useState, useRef, forwardRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { FaBell } from "react-icons/fa6";
 import { FaSearch } from "react-icons/fa";
-import { useEffect, useState } from "react";
 import { useUserTable } from "../hooks/useUserTable";
 import { useDispatch } from 'react-redux';
 import { clearUserInfo } from '../store/userReducer';
 import { supabase } from "../supabase/supabase";
 import { useRegion } from "../hooks/useRegion";
 import { useCategoriesTable } from "../hooks/useCategoriesTable";
+import "../css/layout.css";
+import { LayoutMenu } from './Layout.Menu';
+import { LayoutMenuTop } from './Layout.Menu.Top'
+import { FaUserCircle } from "react-icons/fa";
+import logo from '../logo.png';
+import { FaArrowAltCircleRight } from "react-icons/fa";
+import * as Stlye from './Layout.style'
+
 
 const board_init = (categories) => {
     const location = useLocation();
     if (!categories) return;
     const pathSegments = decodeURIComponent(location.pathname).split('/').filter(Boolean);
-    // 초기화된 경로 결과를 저장할 배열
     const matchedPath = [];
     let currentLevel = categories;
     for (const segment of pathSegments) {
         const found = currentLevel.find(cat => cat.url === segment);
         if (!found) break;
-
         matchedPath.push(found);
-        currentLevel = found.children || []; // 다음 단계로 이동
+        currentLevel = found.children || [];
     }
-    return matchedPath; // 계단식으로 탐색된 카테고리 배열
+    return matchedPath;
 };
 
-/* children가 <Routes> </Routes> 부분 */
+const SearchBar = forwardRef(({}, ref) => {
+    const [isFocused, setIsFocused] = useState(false);
+    return (
+        <form className="inputBox"
+            onSubmit={(e) => {
+                e.preventDefault();
+            }}
+        >
+            <input 
+                ref={ref} 
+                placeholder="검색어를 입력해주세요..."
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+            />
+                <button type="submit" className={isFocused ? 'focused' : ''}>
+                    {isFocused ? <FaArrowAltCircleRight /> : <FaSearch />}
+                </button>
+        </form>
+    );
+});
+
+function SideBar({ }) {
+
+} 
+
 export function Layout({ children }) {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const user = useUserTable();
+    const refInput = useRef();
     const location = useLocation();
+    const [showSearch, setShowSearch] = useState(false);
+    const [humbeger, setHumbeger] = useState(false);
     const { info: categories, loading: categoriesLoding } = useCategoriesTable();
     const board = board_init(categories);
     const {
@@ -42,259 +72,233 @@ export function Layout({ children }) {
         district, setDistrict,
         citys, districts,
     } = useRegion();
-    /** 현재 최상단인지 확인 */
     const [atTop, setAtTop] = useState(true);
-    
-    /** 로그아웃 */
-    const handleLogout = useCallback(async () => {
+
+    const linkRef = useRef();
+
+    const [isHovering, setIsHovering] = useState(false);
+    let hoverTimer = useRef(null);
+
+    // 마우스가 진입했을 때
+    const handleMouseEnter = () => {
+        clearTimeout(hoverTimer.current);
+        setIsHovering(true);
+    };
+
+    // 마우스가 완전히 나갔을 때 (약간의 delay로 처리)
+    const handleMouseLeave = () => {
+        hoverTimer.current = setTimeout(() => {
+            setIsHovering(false);
+            setHumbeger(false);
+        }, 500); // 짧은 딜레이를 주면 사용자 경험이 더 부드러움
+    };
+
+    const handleLogout = useCallback(async (e) => {
+        e.preventDefault()
         const { error } = await supabase.auth.signOut();
         if (error) {
             alert('로그아웃 실패: ' + error.message);
         } else {
-            alert('로그아웃 되었습니다.')
+            alert('로그아웃 되었습니다.');
             dispatch(clearUserInfo());
         }
     }, [dispatch]);
 
-    /** path에 입력된 값으로 주소값을 바꿔줌 */
     const handleNavigate = useCallback((e, path) => {
-        e.preventDefault()
-        navigate(path)
-    }, [navigate])
+        e.preventDefault();
+        navigate(path);
+    }, [navigate]);
 
-    /** 필요한 데이터가 모두 로딩되었는지 확인 */
     const isLoading = useCallback(() => {
-        let result = false;
-        const loadingStates = [
-            categoriesLoding,
-        ];
-
-        for (let i = 0; i < loadingStates.length; i++) {
-            if (loadingStates[i]) {
-                result = true;
-                break;
-            }
-        }
-        return result;
-    }, [categoriesLoding])
+        return categoriesLoding;
+    }, [categoriesLoding]);
 
     useEffect(() => {
-        const handleScroll = () => { setAtTop(window.scrollY === 0); };
+        const handleScroll = () => setAtTop(window.scrollY === 0);
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
-    
+
     useEffect(() => {
         window.scrollTo(0, 0);
     }, [location.pathname]);
 
-    if (isLoading()) { return <></> }
-    //console.log(board)
-    return (<div className={styles.layout}>
-        {/* 헤더부분 */}
-        <header className={atTop ?styles.top:''}>
-            {/* 헤더의 첫번째줄 */}
-            <div className={styles.breakpoints}>
-                {/* 로고 이미지 */}
-                <img
-                    src={logo} alt="logo"
-                    style={{transform: 'rotate(305deg)'}}
-                    className={styles.logo}
-                    onClick={(e) => handleNavigate(e, '/')}
-                />
-                {/* 검색 창*/}
-                <form className={styles.inputBox}>
-                    <input />
-                    <button>
-                        <FaSearch />
-                    </button>
-                </form>
-                {/* 맨 우측 ui들 */}
-                <div className={styles.right}>
-                    {user.info === null
-                        // 비로그인시 로그인 ui
-                        ? (<>
-                            <p
-                                className={styles.link}
-                                onClick={(e) => handleNavigate(e, '/login')}
-                            >
-                                로그인
-                            </p>
-                        </>)
-                        // 로그인시 내정보, 알람 UI
-                        : (<>
-                            <p 
-                            className={styles.link}
-                            onClick={(e)=>{
-                                e.preventDefault();
-                                navigate('/my')
-                            }}
-                            >
-                                내정보
-                            </p>
-                            <a className={styles.shaking}>
-                                <FaBell />
-                            </a>
-                        </>)
-                    }
-                </div>
-            </div>
-            {/* 헤더 두번째줄 */}
-            <div className={`${styles.breakpoints} ${styles.header}`}
-                style={{ display: 'flex', alignItems: 'flex-start', gap: '2px' }}
-            >
-                {/* 홈은 리스트에 없음으로 먼저 생성 */}
-                <div
-                    style={{ width: 'calc( 100% - 64px )' }}
-                >
-                    <p
-                        className={`${styles['board-item']} ${(location.pathname === '/'? styles.red : '')}`}
-                        onClick={(e) => handleNavigate(e, '/')}
-                    >
-                        홈
-                    </p>
-                    {/* 임시 게시판 이름 */}
-                    {categories.filter((o) => o.id !== 16).map((o, k) => (
-                        <React.Fragment key={k}>
-                            {/* 각각 게시판 이름 나열 */}
-                            <p
-                                className={`${styles['board-item']} ${(o.url == board[0]?.url ? styles.red : '')}`}
-                                onClick={(e) => handleNavigate(e, `/${o.url}`)}
-                            >
-                                {o.name}
-                            </p>
-                        </React.Fragment>)
-                    )}
-                </div>
-                {/* 유저의 정보가 있으면 로그아웃 ui 생성 */}
-                {user.info !== null && (
-                    <div
-                        className={styles.right}
-                        style={{ width: '64px', flexShrink: 0 }}
-                    >
-                        <p
-                            className={`${styles.link} ${styles.red}`}
-                            onClick={(e) => {
-                                e.preventDefault();
-                                handleLogout();
-                            }}
-                        >로그아웃</p>
-                    </div>
-                )}
-            </div>
-            {/* 모바일 모드시 tap을 상단에 생성 */}
-            { board[0] !== undefined && (
-            <div className={`${styles.taps}`}>
-                {/* 게시판의 모든 탭들을 보여주는 ui */}
-                <div className={styles.breakpoints}>
-                    <ul>
-                        {/* 전체는 기본적으로 있으니 미리 생성 */}
-                        <li
-                            className={board[1] === undefined ? styles.select : ''}
-                            style={{ whiteSpace:'nowrap', textOverflow: 'ellipsis'  }}
-                            onClick={(e) => {
-                                e.preventDefault();
-                                navigate(`/${board[0].url}`);
-                            }}
-                        >
-                            { board[0].url !== 'my'?"전체":"내정보" }
-                        </li>
-                        { board[0].children.map((o, k) => (
-                            <li
-                                key={k}
-                                className={o.url === board[1]?.url ? styles.select : ''}
-                                style={{ whiteSpace:'nowrap', textOverflow: 'ellipsis' }}
-                                onClick={(e) => handleNavigate(e, `/${board[0].url}/${o.url}`)}
-                            >
-                                {o.name}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            </div>)}
-        </header>
-        {/* 게시판들의 각 탭들을 나타내는 ui */}
-        {/* board_init의 스위치문에 추가하면, 해당 ui들이 안나타남 */}
-        {board[0] !== undefined ? (
-            <div className={`${styles.breakpoints} ${styles.main}`}>
-                <p className={styles.p}>
-                    <a onClick={(e) => handleNavigate(e, '/')} > {'홈 > '}</a>
-                    {/* 현재 주소의 위치를 모두 기입 */}
-                    {board.map((o, k) => {
-                        if (k === board.length - 1) {
-                            return <strong key={k} className={styles.strong}>{o.name }</strong>;
-                        } else {
-                            return <a key={k}> {o.name + ' > '}</a>;
-                        }
-                    })}
-                </p>
-                {/* 위치 ui */}
-                { board[0].url !== 'my' &&(
-                <div className={styles.div}>
-                    {/* 시 선택 ui */}
-                    <select
-                        className={styles.select_region}
-                        value={city}
-                        onChange={(e) => setCity(e.target.value)}
-                    >
-                        {citys.map((o, k) => (
-                            <option key={k}>{o}</option>
-                        ))}
-                    </select>
-                    {/* 군구 선택 ui */}
-                    <select
-                        className={styles.select_region}
-                        value={district}
-                        onChange={(e) => setDistrict(e.target.value)}
-                    >
-                        {districts.map((o, k) => (
-                            <option key={k}>{o}</option>
-                        ))}
-                    </select>
-                </div>
-                )}
-                {/* 게시판의 각 탭 표시 */}
-                <div className={styles.div}>
-                    <ul className={styles.ul}>
-                        {/* 전체는 기본적으로 있으니 미리 생성 */}
-                        <li
-                            className={board[1] === undefined ? `${styles.li} ${styles.select}` : styles.li}
-                            onClick={(e) => {
-                                e.preventDefault();
-                                navigate(`/${board[0].url}`);
-                            }}
-                        >
-                            { board[0].url !== 'my'?"전체":"내정보" }
-                        </li>
-                        {/* 게시판의 각 탭들 표기 */}
-                        {board[0].children.map((o, k) => (
-                            <li
-                                key={k}
-                                className={o.url === board[1]?.url ? `${styles.li} ${styles.select}` : styles.li}
-                                onClick={(e) => handleNavigate(e, `/${board[0].url}/${o.url}`)}
-                            >
-                                {o.name}
-                            </li>
-                        ))}
-                    </ul>
-                    {/* children(페이지) 랜더링 */}
-                    <main className={`${styles.mainLayout}`}>
-                        {children}
-                    </main>
-                </div>
-            </div>
-        ) : (
-            // tap 부분이 필요없는 children(페이지) 랜더링
-            <main className={styles.mainLayout}>
-                <div className={styles.div}> {children} </div>    
-            </main>
-        )}
-        {/* 맨 하단 푸터 */}
-        <footer>
-            <div className={styles.breakpoints}>
-                ( 푸터 내용을 적어주세요 )
-            </div>
-        </footer>
+    useEffect(() => {
+        const handleScroll = () => {
+            setShowSearch(window.scrollY >= 60);
+        };
 
-    </div>)
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
+
+
+    if (isLoading()) return <></>;
+    return (
+        <div className="layout">
+            <header className={atTop ? "layout_header top" : "layout_header"}>
+                <div className="breakpoints">
+                    <img
+                        className="logo"
+                        src={logo}
+                        alt="logo"
+                        style={{ transform: 'rotate(305deg)' }}
+                        onClick={(e) => handleNavigate(e, '/')}
+                    />
+                    <div className='displayOff'>
+                        <p
+                            className={`board-item ${location.pathname === '/' ? 'red' : ''}`}
+                            onClick={(e) => handleNavigate(e, `/`)}
+                        >
+                            홈
+                        </p>
+                        {categories.filter((o) => ![16, 26].includes(o.id)).map((o, k) => (
+                            <React.Fragment key={k}>
+                                <p
+                                    className={`board-item ${o.url === board[0]?.url ? 'red' : ''}`}
+                                    onClick={(e) => handleNavigate(e, `/${o.url}`)}
+                                >
+                                    {o.name}
+                                </p>
+                            </React.Fragment>
+                        ))}
+                    </div>
+                    <div className="right">
+                        {board.length > 0 && !['my', 'login'].includes(board[0].url) && (<>
+                            <div className="div">
+                                <select
+                                    className="select_region"
+                                    value={city}
+                                    onChange={(e) => setCity(e.target.value)}
+                                >
+                                    {citys.map((o, k) => (
+                                        <option key={k}>{o}</option>
+                                    ))}
+                                </select>
+                                <select
+                                    className="select_region"
+                                    value={district}
+                                    onChange={(e) => setDistrict(e.target.value)}
+                                >
+                                    {districts.map((o, k) => (
+                                        <option key={k}>{o}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <button
+                                className={`serchBtn ${showSearch ? 'show' : ''}`}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    if (refInput.current) {
+                                        refInput.current.scrollIntoView({ behavior: 'smooth', block: 'center' }); // 스무스 스크롤
+                                        setTimeout(() => {
+                                            refInput.current.focus(); // 포커스
+                                        }, 100); // 스크롤이 끝나고 포커스 주기 (지연시간은 조정 가능)
+                                    }
+                                }}
+                            >
+                                <FaSearch />
+                            </button>
+                        </>)}
+                        {user.info ? (
+                            <div className="profile"
+                                onClick={(e) => {
+                                    e.preventDefault()
+                                    setHumbeger(!humbeger);
+                                }}
+                                onMouseEnter={handleMouseEnter}
+                                onMouseLeave={handleMouseLeave}
+                            >
+                                {/* <FaBell className='bell shaking' />
+                                <FaUserCircle className='red' /> */}
+                                <FaBell className='bell' />
+                                <FaUserCircle className='' />
+                                <div
+                                    className={`humbeger ${humbeger ? 'on' : ''}`}
+                                    onMouseEnter={handleMouseEnter}
+                                    onMouseLeave={handleMouseLeave}
+                                >
+                                    <b className='humbeger_btn'
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            navigate('/my')
+                                        }}
+                                    >
+                                        내정보
+                                    </b>
+                                    <b className='humbeger_btn'
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            navigate('/my/talk')
+                                        }}
+                                    >
+                                        채팅
+                                    </b>
+                                    <b className='humbeger_btn logout' onClick={handleLogout}>
+                                        로그아웃
+                                    </b>
+                                </div>
+                            </div>)
+                            : (
+                                <div
+                                    className='link'
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        navigate('/login')
+                                    }}
+                                >
+                                    로그인
+                                </div>
+                            )}
+                    </div>
+                </div>
+                <div
+                    ref={linkRef}
+                    className="breakpoints header"
+                    style={{ display: 'flex', alignItems: 'flex-start', gap: '2px' }}
+                >
+                    <div className='displayOn' style={{ width: 'calc( 100% - 64px )' }}>
+                        <p
+                            className={`board-item ${location.pathname === '/' ? 'red' : ''}`}
+                            onClick={(e) => handleNavigate(e, `/`)}
+                        >
+                            홈
+                        </p>
+                        {categories.filter((o) => o.id !== 16).map((o, k) => (
+                            <React.Fragment key={k}>
+                                <p
+                                    className={`board-item ${o.url === board[0]?.url ? 'red' : ''}`}
+                                    onClick={(e) => handleNavigate(e, `/${o.url}`)}
+                                >
+                                    {o.name}
+                                </p>
+                            </React.Fragment>
+                        ))}
+                    </div>
+                </div>
+                {board[0] !== undefined && (<LayoutMenuTop board={board} />
+                )}
+            </header>
+            {board[0] !== undefined ? (
+                <div className="breakpoints main">
+                    <div className="div">
+                        <LayoutMenu board={board} />
+                        <main className="mainLayout">
+                            {board[0].url !== 'my' && (<SearchBar ref={refInput} />)}
+                            <main className="mainLayout">
+                                <div>{children}</div>
+                            </main>
+                        </main>
+                    </div>
+                </div>
+            ) : (
+                <main className="mainLayout">
+                    <div className="div">{children}</div>
+                </main>
+            )}
+            <footer className='layout_footer'>
+                <div className="breakpoints">( 푸터 내용을 적어주세요 )</div>
+            </footer>
+        </div>
+    );
 }

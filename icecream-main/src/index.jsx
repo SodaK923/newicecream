@@ -1,12 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, } from 'react-router-dom';
 import { Provider as ReduxProvider } from "react-redux";
 import { redux } from "./store/redux";
 import './index.css';
 import { Layout } from './components/layout';
 import { Login } from './components/login';
 import { LoginRedirect } from './components/login.redirect'
+import { MyPage } from './components/Mypage';
 import { TestPage } from './components/testpage';
 
 import { Trade } from './components/Trade';
@@ -23,25 +24,19 @@ import { UsedDetail } from './components/UsedDetail';
 import { UsedUpdate } from './components/UsedUpdate';
 import { UsedOrder } from './components/UsedOrder';
 
-
-function Home() {
-
-  return (
-    <>
-      <div>메인 페이지</div>
-    </>
-  );
-}
-
 function App() {
   return (
     <BrowserRouter>
+      {/* 리덕스 사용 */}
       <ReduxProvider store={redux}>
         <Layout>
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path='/login' element={<Login />} />
-            <Route path='/login/redirect' element={<LoginRedirect />} />
+            <Route path='/' element={<></>} />
+            <Route path='/login' element={<Login/>} />
+            <Route path='/login/redirect' element={<LoginRedirect/>} />
+            <Route path='/my' element={<MyPage />} />
+            <Route path='/my/:tap' element={<MyPage />} />
+            <Route path='/my/:tap/:item' element={<MyPage />} />
             <Route path='/test' element={<TestPage />} />
             <Route path='/trade/gonggu' element={<Trade />} />
             <Route path='/trade/sell' element={<UsedSell />} />
@@ -64,6 +59,7 @@ function App() {
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   // <React.StrictMode>
-  <App />
+    <App />
   // </React.StrictMode>
 );
+

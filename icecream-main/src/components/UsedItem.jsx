@@ -45,7 +45,9 @@ export function UsedItem({ used }) {
     };
 
     const handleDetail = () => navigate(`${used.id}`);
+    // 등록시간과 수정시간이 다르면 true, 같으면 false (isEdited는 boolean 값을 담는 변수)
     const isEdited = used.create_date !== used.update_date;
+    // true: 수정, false: 등록 -> baseTime 에 저장
     const baseTime = isEdited ? used.update_date : used.create_date;
 
     return (
