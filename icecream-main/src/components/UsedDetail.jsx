@@ -213,9 +213,9 @@ export function UsedDetail() {
         const { data, error } = await supabase
             .from('chats')
             .insert([{
-                sender_id: userInfo.id,
-                receiver_id: detail.users?.id,
-                chat: '띵동',
+                sender_id: detail?.user_id,
+                receiver_id: userInfo?.id,
+                chat: '거래해요!',
                 create_date: now,
                 read: false,
                 trades_id: detail.id,
@@ -228,6 +228,7 @@ export function UsedDetail() {
         if (data) {
             console.log('data: ', data);
             alert('채팅이 전송되었습니다.');
+            navigate(`/my/talk/${detail?.user_id}`)
         }
     }
 
@@ -333,7 +334,7 @@ export function UsedDetail() {
                         <h4 className="fw-bold">{detail.title}</h4>
                         <div className="text-secondary mb-2">
                             {detail.categories?.name} · {detail.location}
-                            <span className="ms-3">{getDateDiff(baseTime)}{isEdited && (' (수정됨)')}</span>
+                            <span className="ms-3">{getDateDiff(baseTime)}{isEdited && (' (수정)')}</span>
                         </div>
                         <div className="mb-3 fs-4 fw-bold" style={{ color: "#333" }}>
                             {detail.category_id === 5

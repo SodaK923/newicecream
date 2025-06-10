@@ -36,7 +36,7 @@ export function UsedCreate() {
         4: "sell",    // 중고거래
         5: "share",     // 구매
         6: "buy"  // 나눔
-};
+    };
 
     useEffect(() => {
         (async () => {
@@ -168,6 +168,16 @@ export function UsedCreate() {
                         <option value="6">구해요</option>
                         {/* <option value="7">공구해요</option> */}
                     </Form.Select>
+                </Form.Group>
+
+                <Form.Group className="mb-3" controlId="location">
+                    <Form.Label>지역</Form.Label>
+                    <Form.Select value={location} disabled>
+                        <option value="">{location}</option>
+                    </Form.Select>
+                    <div className="form-text mt-1 text-muted" style={{ fontSize: 14 }}>
+                        ※ 상단메뉴에서 선택해주세요.
+                    </div>
                 </Form.Group>
 
                 <Form.Group className="mb-3" controlId="title">

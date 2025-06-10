@@ -20,6 +20,11 @@ export function UsedUpdate() {
     const [price, setPrice] = useState("");
     // 기존 사진
     const [exPics, setExPics] = useState([]);
+    const [location, setLocation] = useState("");
+
+    // 새 지역 선택(안씀)
+    // const { city, district } = useRegion();
+    // const newLocation = `${city} ${district}`;
 
     // type-> 4: 벼룩해요 5: 드림해요 6. 구해요 7. 공구해요
     const [category, setCategory] = useState("");
@@ -39,8 +44,8 @@ export function UsedUpdate() {
     };
 
     // 지역 정보인데 쓸 지 안쓸 지 모르겠음..
-    // const { city, district } = useRegion();
-    // const location = `${city} ${district}`;
+    //const { city, district } = useRegion();
+    //const location = `${city} ${district}`;
 
 
     // 로그인 안됐으면 튕기게(중간에 로그아웃되면 막으라고 쓴 건데 효과없는 듯)
@@ -76,6 +81,7 @@ export function UsedUpdate() {
                 setContent(data.content)
                 setPrice(data.price)
                 setCategory(String(data.category_id))
+                setLocation(data.location)
                 //기존 이미지들 배열로 만듦
                 setExPics([
                     data.main_img,
@@ -140,7 +146,7 @@ export function UsedUpdate() {
             alert("가격을 입력해주세요.");
             return;
         }
-        if(!confirm('게시글을 수정할까요?')){
+        if (!confirm('게시글을 수정할까요?')) {
             return;
         }
 
@@ -151,6 +157,7 @@ export function UsedUpdate() {
                 content,
                 price: category === "5" ? 0 : Number(price),
                 category_id: Number(category),
+                location,
                 // 슈퍼베이스 경로 붙여줘야함
                 main_img: getFinalUrl(finalPics[0]),
                 detail_img1: getFinalUrl(finalPics[1]),
@@ -158,7 +165,6 @@ export function UsedUpdate() {
                 detail_img3: getFinalUrl(finalPics[3]),
                 detail_img4: getFinalUrl(finalPics[4]),
                 update_date: now
-                //location
             })
             .eq('id', item)
             .select()
@@ -168,129 +174,149 @@ export function UsedUpdate() {
         } if (data) {
             //console.log(data)
             // todo: 글작성한 카테고리로 자동 이동하게 하기
-            const categoryString=CATEGORY_MAP[category];
-            const newItem=data.id;
+            const categoryString = CATEGORY_MAP[category];
+            const newItem = data.id;
             navigate(`/trade/${categoryString}/${newItem}`);
         }
     }
 
 
     return (
-    <div className="p-4 rounded-4 shadow-sm bg-white" style={{ maxWidth: 600, margin: "40px auto" }}>
-        <Form>
-            <Form.Group className="mb-3" controlId="category">
-                <Form.Label>글수정</Form.Label>
-                <Form.Select value={category} onChange={e => setCategory(e.target.value)} required>
-                    <option value="">카테고리 선택</option>
-                    <option value="4">벼룩해요</option>
-                    <option value="5">드림해요</option>
-                    <option value="6">구해요</option>
-                </Form.Select>
-            </Form.Group>
+        <div className="p-4 rounded-4 shadow-sm bg-white" style={{ maxWidth: 600, margin: "40px auto" }}>
+            <Form>
+                <Form.Group className="mb-3" controlId="category">
+                    <Form.Label>글수정</Form.Label>
+                    <Form.Select value={category} onChange={e => setCategory(e.target.value)} required>
+                        <option value="">카테고리 선택</option>
+                        <option value="4">벼룩해요</option>
+                        <option value="5">드림해요</option>
+                        <option value="6">구해요</option>
+                    </Form.Select>
+                </Form.Group>
 
-            <Form.Group className="mb-3" controlId="title">
-                <FloatingLabel label="제목">
+                <Form.Group className="mb-3" controlId="location">
+                    <Form.Label>지역</Form.Label>
                     <Form.Control
+                        value={location}
                         type="text"
-                        value={title}
-                        onChange={e => setTitle(e.target.value)}
-                        placeholder="제목"
-                        required
+                        disabled
                     />
-                </FloatingLabel>
-            </Form.Group>
+                    <div className="form-text mt-1 text-muted" style={{ fontSize: 14 }}>
+                        ※ 지역은 수정할 수 없습니다.
+                    </div>
+                </Form.Group>
 
-            <Form.Group className="mb-3" controlId="content">
-                <FloatingLabel label="내용">
+                {/* 새 지역 선택(안씀) */}
+                {/* <Form.Group className="mb-3" controlId="newLocation">
+                    <Form.Label>지역</Form.Label>
+                    <Form.Select value={newLocation}>
+                        <option value="">{newLocation}</option>
+                    </Form.Select>
+                </Form.Group> */}
+
+                <Form.Group className="mb-3" controlId="title">
+                    <FloatingLabel label="제목">
+                        <Form.Control
+                            type="text"
+                            value={title}
+                            onChange={e => setTitle(e.target.value)}
+                            placeholder="제목"
+                            required
+                        />
+                    </FloatingLabel>
+                </Form.Group>
+
+                <Form.Group className="mb-3" controlId="content">
+                    <FloatingLabel label="내용">
+                        <Form.Control
+                            as="textarea"
+                            style={{ minHeight: 120 }}
+                            value={content}
+                            onChange={e => setContent(e.target.value)}
+                            placeholder="내용"
+                            required
+                        />
+                    </FloatingLabel>
+                </Form.Group>
+
+                <Form.Group className="mb-3" controlId="price">
+                    <InputGroup>
+                        <Form.Control
+                            type="number"
+                            value={category === "5" ? 0 : price}
+                            onChange={e => setPrice(e.target.value)}
+                            placeholder={category === "5" ? "나눔" : "가격"}
+                            disabled={category === "5"}
+                            min={0}
+                            required={category !== "5"}
+                        />
+                        {category !== "5" && <InputGroup.Text>원</InputGroup.Text>}
+                    </InputGroup>
+                </Form.Group>
+
+                {/* 기존 이미지 미리보기 */}
+                <Form.Group className="mb-3">
+                    <Form.Label>기존 이미지</Form.Label>
+                    <div className="d-flex flex-wrap gap-2 mt-1">
+                        {exPics.length > 0 ? (
+                            exPics.map((img, i) => (
+                                <Image
+                                    key={i}
+                                    src={img}
+                                    alt={`기존 이미지 ${i + 1}`}
+                                    style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: 12, border: "1px solid #eee" }}
+                                    thumbnail
+                                />
+                            ))
+                        ) : (
+                            <div className="text-muted">기존 이미지 없음</div>
+                        )}
+                    </div>
+                </Form.Group>
+
+                {/* 새 이미지 업로드 */}
+                <Form.Group className="mb-3" controlId="images">
+                    <Form.Label>이미지 업로드</Form.Label>
                     <Form.Control
-                        as="textarea"
-                        style={{ minHeight: 120 }}
-                        value={content}
-                        onChange={e => setContent(e.target.value)}
-                        placeholder="내용"
-                        required
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={handleFileChange}
                     />
-                </FloatingLabel>
-            </Form.Group>
-
-            <Form.Group className="mb-3" controlId="price">
-                <InputGroup>
-                    <Form.Control
-                        type="number"
-                        value={category === "5" ? 0 : price}
-                        onChange={e => setPrice(e.target.value)}
-                        placeholder={category === "5" ? "나눔" : "가격"}
-                        disabled={category === "5"}
-                        min={0}
-                        required={category !== "5"}
-                    />
-                    {category !== "5" && <InputGroup.Text>원</InputGroup.Text>}
-                </InputGroup>
-            </Form.Group>
-
-            {/* 기존 이미지 미리보기 */}
-            <Form.Group className="mb-3">
-                <Form.Label>기존 이미지</Form.Label>
-                <div className="d-flex flex-wrap gap-2 mt-1">
-                    {exPics.length > 0 ? (
-                        exPics.map((img, i) => (
+                    <div className="form-text mt-1 text-muted" style={{ fontSize: 14 }}>
+                        ※ 이미지는 최대 5장까지 업로드할 수 있습니다.<br />
+                        <span className="text-secondary">가장 먼저 선택한 이미지가 대표이미지로 설정됩니다.</span>
+                    </div>
+                    {fileCount !== images.length && (
+                        <div className="mt-2 text-secondary d-flex align-items-center gap-2">
+                            <Spinner animation="border" size="sm" />
+                            이미지 업로드 중입니다...
+                        </div>
+                    )}
+                    <div className="d-flex flex-wrap gap-2 mt-3">
+                        {images.length > 0 && images.map((img, idx) => (
                             <Image
-                                key={i}
-                                src={img}
-                                alt={`기존 이미지 ${i + 1}`}
+                                key={idx}
+                                src={getImages(img)}
+                                alt={`업로드 이미지${idx + 1}`}
                                 style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: 12, border: "1px solid #eee" }}
                                 thumbnail
                             />
-                        ))
-                    ) : (
-                        <div className="text-muted">기존 이미지 없음</div>
-                    )}
-                </div>
-            </Form.Group>
-
-            {/* 새 이미지 업로드 */}
-            <Form.Group className="mb-3" controlId="images">
-                <Form.Label>이미지 업로드</Form.Label>
-                <Form.Control
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={handleFileChange}
-                />
-                <div className="form-text mt-1 text-muted" style={{ fontSize: 14 }}>
-                    ※ 이미지는 최대 5장까지 업로드할 수 있습니다.<br />
-                    <span className="text-secondary">가장 먼저 선택한 이미지가 대표이미지로 설정됩니다.</span>
-                </div>
-                {fileCount !== images.length && (
-                    <div className="mt-2 text-secondary d-flex align-items-center gap-2">
-                        <Spinner animation="border" size="sm" />
-                        이미지 업로드 중입니다...
+                        ))}
                     </div>
-                )}
-                <div className="d-flex flex-wrap gap-2 mt-3">
-                    {images.length > 0 && images.map((img, idx) => (
-                        <Image
-                            key={idx}
-                            src={getImages(img)}
-                            alt={`업로드 이미지${idx + 1}`}
-                            style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: 12, border: "1px solid #eee" }}
-                            thumbnail
-                        />
-                    ))}
-                </div>
-            </Form.Group>
+                </Form.Group>
 
-            <div className="d-grid gap-2 mt-4">
-                <Button
-                    style={{ background: "var(--base-color-5)", border: "none" }}
-                    size="lg"
-                    onClick={handleUpdate}
-                    disabled={images.length > 0 && fileCount !== images.length}
-                >
-                    수정
-                </Button>
-            </div>
-        </Form>
-    </div>
-);
+                <div className="d-grid gap-2 mt-4">
+                    <Button
+                        style={{ background: "var(--base-color-5)", border: "none" }}
+                        size="lg"
+                        onClick={handleUpdate}
+                        disabled={images.length > 0 && fileCount !== images.length}
+                    >
+                        수정
+                    </Button>
+                </div>
+            </Form>
+        </div>
+    );
 }

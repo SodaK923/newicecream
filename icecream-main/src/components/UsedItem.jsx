@@ -96,7 +96,7 @@ export function UsedItem({ used }) {
                             : `${Number(used.price).toLocaleString()}원`
                         }
                     </span>
-                    <span className="small text-muted">{used.location} · {getDateDiff(baseTime)}{isEdited && ' (수정됨)'}</span>
+                    <span className="small text-muted">{used.location} · {getDateDiff(baseTime)}{isEdited && ' (수정)'}</span>
                 </div>
             </Card.Body>
         </Card>
