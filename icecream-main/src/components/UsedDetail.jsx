@@ -6,49 +6,32 @@ import { useNavigate } from "react-router-dom";
 import { useUserTable } from "../hooks/useUserTable";
 import { Carousel, Row, Col, Button, Badge, Card } from 'react-bootstrap';
 import { FaRegHeart } from "react-icons/fa";
+import { Likes } from "./Likes";
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+
+
 
 export function UsedDetail() {
     const { item } = useParams();
     const navigate = useNavigate();
     const now = new Date().toISOString();
-    const [error, setError] = useState(null);
-    const [likesCount, setLikesCount] = useState(0);    // 좋아요 수
-    const [isLiked, setIsLiked] = useState(false);      // 내가 눌렀는지
-    const [isLiking, setIsLiking] = useState(false);    // 처리중
-    const [productUser, setProductUser] = useState(null);
-    const [loading, setLoading] = useState(true);
+    
 
 
     const [detail, setDetail] = useState(null);
     // 로그인한 사람의 정보
     const { info: userInfo } = useUserTable();
 
-    // 아이템 가져옴
-    useEffect(() => {
-        const fetchDetails = async () => {
-            try {
-                const { data: detailData, error } = await supabase
-                    .from('trades')
-                    .select('*, categories(*), users(id, name)')
-                    .eq('id', item)
-                    .single();
-                console.log(detailData);
-                if (error) {
-                    console.log('error: ', error);
-                }
-                if (detailData) {
-                    setDetail(detailData);
-                }
 
-                // 처음 상품 로드할 때 좋아요 수 조회 (++)
-                const { count, error: likeCountError } = await supabase
+        useEffect(() => {
+        const fetchLikes = async () => {
+            const { count, error: likeCountError } = await supabase
                     .from('likes')
                     .select('*', { count: 'exact', head: true })
-                    .eq('category_id', detailData.category_id)
-                    .eq('table_id', detailData.id);
+                    .eq('category_id', used.category_id)
+                    .eq('table_id', used.id);
 
                 if (!likeCountError) {
                     setLikesCount(count);
@@ -57,133 +40,82 @@ export function UsedDetail() {
                 }
 
                 await supabase.rpc('increment_view_count', { trade_id: parseInt(item) });
-
-                // 게시물 작성자 가져오기?
-                if (detailData.user_id) {
-                    const { data: userData, error: userError } = await supabase
-                        .from('users')
-                        .select('*')
-                        .eq('id', detailData.user_id)
-                        .single();
-
-                    if (!userError) {
-                        setProductUser(userData);
-                    }
-                }
-
-                // 사용자 좋아요 상태 체크
-                const { data: likedData } = await supabase
-                    .from('likes')
-                    .select('id')
-                    .eq('category_id', detailData.category_id)
-                    .eq('table_id', detailData.id)
-                    .eq('user_id', userInfo?.id);
-
-                setIsLiked(likedData?.length > 0);
-
-            } catch (err) {
-                console.error('Unexpected error:', err);
-                setError('데이터를 불러오는 도중 오류가 발생했습니다.');
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchDetails();
+        }
+        fetchLikes();
     }, [item]);
 
-    // 좋아요 수 갱신 함수
-    const updateLikeCount = async () => {
-        try {
-            const { count, error: likeCountError } = await supabase
-                .from('likes')
-                .select('*', { count: 'exact', head: true })
-                .eq('category_id', detail.category_id)
-                .eq('table_id', detail.id);
 
-            if (!likeCountError) {
-                setLikesCount(count);  // 좋아요 수 갱신
-            } else {
-                console.error('좋아요 수 불러오기 실패', likeCountError);
-            }
-        } catch (error) {
-            console.error('좋아요 수 갱신 실패:', error);
-        }
-    };
-
-    const handleLikeToggle = async () => {
-        if (!detail) return;
-        setIsLiking(true);
-
-        try {
-            if (isLiked) {
-                // 좋아요 취소
-                await supabase
-                    .from('likes')
-                    .delete()
-                    .eq('category_id', detail.category_id)
-                    .eq('table_id', detail.id)
-                    .eq('user_id', userInfo.id);
-
-                setIsLiked(false);
-            } else {
-                // 좋아요 추가
-                await supabase
-                    .from('likes')
-                    .insert({
-                        category_id: detail.category_id,
-                        table_id: detail.id,
-                        user_id: userInfo.id
-                    });
-
-                setIsLiked(true);
-            }
-
-            // 좋아요 상태 변경 후 좋아요 수 갱신
-            await updateLikeCount();
-
-        } catch (error) {
-            console.error('좋아요 처리 실패:', error);
-            alert('좋아요 처리 중 오류가 발생했습니다.');
-        } finally {
-            setIsLiking(false);
-        }
-    };
-
-
-
-    // 조회수 증가
+    // 아이템 가져옴
     useEffect(() => {
-        if (!item) return;
-        const increaseView = async () => {
-            const { data, error } = await supabase
+        const fetchDetails = async () => {
+            // 조회수 가져옴
+            if (!item) return;
+            const { data: prevData, error: prevError } = await supabase
                 .from('trades')
                 .select('cnt')
                 .eq('id', item)
                 .single();
+            if (prevError) {
+                console.log('cnterror: ', prevError);
+            }
+
+            // 조회수 증가
+            await supabase
+                .from('trades')
+                .update({ cnt: prevData.cnt + 1 })
+                .eq('id', item)
+
+            // 조회수 증가반영된 아이템 가져옴
+            const { data, error } = await supabase
+                .from('trades')
+                .select('*, categories(*), users(id, name)')
+                .eq('id', item)
+                .single();
+            console.log(data);
             if (error) {
-                console.log('increaseView error: ', error);
-                return;
+                console.log('error: ', error);
             }
             if (data) {
-                // 조회수 증가
-                await supabase
-                    .from('trades')
-                    .update({ cnt: data.cnt + 1 })
-                    .eq('id', item);
-
-                // 증가된 조회수 반영
-                const { data: updateData } = await supabase
-                    .from('trades')
-                    .select('*, categoires(name), users(name)')
-                    .eq('id', item)
-                    .single()
-                if (updateData) {
-                    setDetail(updateData);
-                }
-            }
-        }
-        increaseView();
+                setDetail(data);
+            }   
+        };
+        fetchDetails();
     }, [item]);
+
+
+    // 조회수 증가
+    // useEffect(() => {
+    //     if (!item) return;
+    //     const increaseView = async () => {
+    //         const { data, error } = await supabase
+    //             .from('trades')
+    //             .select('cnt')
+    //             .eq('id', item)
+    //             .single();
+    //         if (error) {
+    //             console.log('increaseView error: ', error);
+    //             return;
+    //         }
+    //         if (data) {
+    //             // 조회수 증가
+    //             await supabase
+    //                 .from('trades')
+    //                 .update({ cnt: data.cnt + 1 })
+    //                 .eq('id', item);
+
+    //             // 증가된 조회수 반영
+    //             const { data: updateData } = await supabase
+    //                 .from('trades')
+    //                 .select('*, categoires(name), users(name)')
+    //                 .eq('id', item)
+    //                 .single()
+    //             if (updateData) {
+    //                 setDetail(updateData);
+    //             }
+    //         }
+    //     }
+    //     increaseView();
+    // }, [item]);
 
 
     // 글 삭제
@@ -246,16 +178,6 @@ export function UsedDetail() {
             // 좋아요 버튼 + 기타 버튼
             return (
                 <div>
-                    <Button
-                        variant={isLiked ? "danger" : "outline-danger"}
-                        size="sm"
-                        onClick={handleLikeToggle}
-                        disabled={isLiking}
-                        style={{ padding: "2px 12px", fontSize: 16 }}
-                    >
-                        {isLiked ? "❤️" : "🤍"}
-                        {isLiked ? " 좋아요 취소" : " 좋아요"}
-                    </Button>
                     {detail.category_id === 4 && (<Button size="sm" style={{ padding: "2px 12px", fontSize: 16 }} onClick={makeChats}>구매하기</Button>)}
                     {detail.category_id === 5 && (<Button onClick={makeChats}>나눔받기</Button>)}
                     {detail.category_id === 6 && (<Button onClick={makeChats}>팔기</Button>)}
@@ -263,8 +185,6 @@ export function UsedDetail() {
             );
         }
     };
-
-
 
 
     // todo: 글 수정
@@ -347,26 +267,13 @@ export function UsedDetail() {
                             ❤️ {detail.like_cnt ?? 0} · 조회 {detail.cnt ?? 0}
                         </div> */}
                         <div className="mb-2 text-muted d-flex align-items-center gap-2" style={{ fontSize: 14 }}>
-                            {/*
-                            <Button
-                                variant={isLiked ? "danger" : "outline-danger"}
-                                size="sm"
-                                onClick={handleLikeToggle}
-                                disabled={isLiking}
-                                style={{ padding: "2px 12px", fontSize: 16 }}
-                            >
-                                {isLiked ? "❤️" : "🤍"}
-                                {isLiked ? " 좋아요 취소" : " 좋아요"}
-                            </Button>*/}
-                            <span>❤️ {likesCount}</span>
-                            <span>· 조회 {detail.cnt ?? 0}</span>
+                            <span> · 조회 {detail.cnt ?? 0}</span>
                         </div>
 
                         <div className="mb-4 text-muted" style={{ fontSize: 14 }}>
                             작성자: {detail.users?.name ?? '알 수 없음'}
                         </div>
                         <div className="d-flex gap-2">
-
                             {handleButtons()}
                         </div>
                     </div>
