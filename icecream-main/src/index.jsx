@@ -24,6 +24,8 @@ import { UsedDetail } from './components/UsedDetail';
 import { UsedUpdate } from './components/UsedUpdate';
 import { UsedOrder } from './components/UsedOrder';
 
+
+
 function App() {
   return (
     <BrowserRouter>

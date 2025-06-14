@@ -11,11 +11,10 @@ import { useCategoriesTable } from "../hooks/useCategoriesTable";
 import "../css/layout.css";
 import { LayoutMenu } from './Layout.Menu';
 import { LayoutMenuTop } from './Layout.Menu.Top'
-import { FaUserCircle } from "react-icons/fa";
-import logo from '../logo.png';
+import logo from '../public/logo.png';
+import profile from '../public/profile.png'
 import { FaArrowAltCircleRight } from "react-icons/fa";
-import * as Stlye from './Layout.style'
-
+import { useImage } from '../hooks/useImage';
 
 const board_init = (categories) => {
     const location = useLocation();
@@ -32,7 +31,7 @@ const board_init = (categories) => {
     return matchedPath;
 };
 
-const SearchBar = forwardRef(({}, ref) => {
+const SearchBar = forwardRef(({ }, ref) => {
     const [isFocused, setIsFocused] = useState(false);
     return (
         <form className="inputBox"
@@ -40,22 +39,18 @@ const SearchBar = forwardRef(({}, ref) => {
                 e.preventDefault();
             }}
         >
-            <input 
-                ref={ref} 
+            <input
+                ref={ref}
                 placeholder="검색어를 입력해주세요..."
                 onFocus={() => setIsFocused(true)}
                 onBlur={() => setIsFocused(false)}
             />
-                <button type="submit" className={isFocused ? 'focused' : ''}>
-                    {isFocused ? <FaArrowAltCircleRight /> : <FaSearch />}
-                </button>
+            <button type="submit" className={isFocused ? 'focused' : ''}>
+                {isFocused ? <FaArrowAltCircleRight /> : <FaSearch />}
+            </button>
         </form>
     );
 });
-
-function SideBar({ }) {
-
-} 
 
 export function Layout({ children }) {
     const navigate = useNavigate();
@@ -66,6 +61,7 @@ export function Layout({ children }) {
     const [showSearch, setShowSearch] = useState(false);
     const [humbeger, setHumbeger] = useState(false);
     const { info: categories, loading: categoriesLoding } = useCategoriesTable();
+    const { getImages } = useImage();
     const board = board_init(categories);
     const {
         city, setCity,
@@ -142,16 +138,21 @@ export function Layout({ children }) {
                         className="logo"
                         src={logo}
                         alt="logo"
-                        style={{ transform: 'rotate(305deg)' }}
                         onClick={(e) => handleNavigate(e, '/')}
                     />
+                    <p
+                        className={`logoName  ${location.pathname === '/' ? 'red' : ''}`}
+                        onClick={(e) => handleNavigate(e, '/')}
+                    >
+                        오생꿀
+                    </p>
                     <div className='displayOff'>
-                        <p
+                        {/* <p
                             className={`board-item ${location.pathname === '/' ? 'red' : ''}`}
                             onClick={(e) => handleNavigate(e, `/`)}
                         >
                             홈
-                        </p>
+                        </p> */}
                         {categories.filter((o) => ![16, 26].includes(o.id)).map((o, k) => (
                             <React.Fragment key={k}>
                                 <p
@@ -201,44 +202,48 @@ export function Layout({ children }) {
                             </button>
                         </>)}
                         {user.info ? (
-                            <div className="profile"
-                                onClick={(e) => {
-                                    e.preventDefault()
-                                    setHumbeger(!humbeger);
-                                }}
-                                onMouseEnter={handleMouseEnter}
-                                onMouseLeave={handleMouseLeave}
-                            >
-                                {/* <FaBell className='bell shaking' />
-                                <FaUserCircle className='red' /> */}
-                                <FaBell className='bell' />
-                                <FaUserCircle className='' />
-                                <div
-                                    className={`humbeger ${humbeger ? 'on' : ''}`}
+                            (board.length === 0 || !['my', 'login'].includes(board[0]?.url)) && (
+                                <div className="profile"
+                                    onClick={(e) => {
+                                        e.preventDefault()
+                                        setHumbeger(!humbeger);
+                                    }}
                                     onMouseEnter={handleMouseEnter}
                                     onMouseLeave={handleMouseLeave}
                                 >
-                                    <b className='humbeger_btn'
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            navigate('/my')
-                                        }}
+                                    <div className='profile_img' style={{ width: '100%', height: "100%" }}>
+                                        <img
+                                            src={user?.info?.img ? getImages(user.info.img) : profile}
+                                            style={{ border: '2px solid var(--base-color-1)' }}
+                                        />
+                                    </div>
+
+                                    <div
+                                        className={`humbeger ${humbeger ? 'on' : ''}`}
+                                        onMouseEnter={handleMouseEnter}
+                                        onMouseLeave={handleMouseLeave}
                                     >
-                                        내정보
-                                    </b>
-                                    <b className='humbeger_btn'
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            navigate('/my/talk')
-                                        }}
-                                    >
-                                        채팅
-                                    </b>
-                                    <b className='humbeger_btn logout' onClick={handleLogout}>
-                                        로그아웃
-                                    </b>
-                                </div>
-                            </div>)
+                                        <b className='humbeger_btn'
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                navigate('/my')
+                                            }}
+                                        >
+                                            내정보
+                                        </b>
+                                        <b className='humbeger_btn'
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                navigate('/my/talk')
+                                            }}
+                                        >
+                                            채팅
+                                        </b>
+                                        <b className='humbeger_btn logout' onClick={handleLogout}>
+                                            로그아웃
+                                        </b>
+                                    </div>
+                                </div>))
                             : (
                                 <div
                                     className='link'
@@ -258,12 +263,12 @@ export function Layout({ children }) {
                     style={{ display: 'flex', alignItems: 'flex-start', gap: '2px' }}
                 >
                     <div className='displayOn' style={{ width: 'calc( 100% - 64px )' }}>
-                        <p
+                        {/* <p
                             className={`board-item ${location.pathname === '/' ? 'red' : ''}`}
                             onClick={(e) => handleNavigate(e, `/`)}
                         >
                             홈
-                        </p>
+                        </p> */}
                         {categories.filter((o) => o.id !== 16).map((o, k) => (
                             <React.Fragment key={k}>
                                 <p
@@ -281,23 +286,68 @@ export function Layout({ children }) {
             </header>
             {board[0] !== undefined ? (
                 <div className="breakpoints main">
-                    <div className="div">
+                    <div className='div' style={{ marginBottom: '50px' }}>
                         <LayoutMenu board={board} />
                         <main className="mainLayout">
                             {board[0].url !== 'my' && (<SearchBar ref={refInput} />)}
-                            <main className="mainLayout">
-                                <div>{children}</div>
-                            </main>
+                            <div>{children}</div>
                         </main>
                     </div>
                 </div>
             ) : (
-                <main className="mainLayout">
-                    <div className="div">{children}</div>
+                <main
+                    className="mainLayout"
+                    style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+                >
+                    <div className='div' style={{ marginBottom: '50px' }}>{children}</div>
                 </main>
             )}
             <footer className='layout_footer'>
-                <div className="breakpoints">( 푸터 내용을 적어주세요 )</div>
+                <div className="footer_container">
+                    <div className="footer_content">
+                        {categories.map((o, index) =>
+                            <ul key={index} className="footer_category">
+                                <li
+                                    className="footer_category_title"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        navigate(o.url)
+                                    }}
+                                >
+                                    <a className='footer_link' href={`/${o.url}`}>{o.name}</a>
+                                </li>
+                                {o.children.map((oj, key) =>
+                                    <li key={oj.id} className="footer_category_item">
+                                        <a className='footer_link' href={`/${o.url}/${oj.url}`}>{oj.name}</a>
+                                    </li>
+                                )}
+                            </ul>
+                        )}
+                        <ul className="footer_portfolio">
+                            <li className="footer_category_title">포트폴리오</li>
+                            {
+                                [
+                                    { name: ' ⓒ 3team', url: 'google.net', },
+                                    { name: '김종현', url: 'google.net', },
+                                    { name: '강수아', url: 'google.net', },
+                                    { name: '이신아', url: 'google.net', },
+                                    { name: '박희원', url: 'google.net', },
+                                    { name: '백종욱', url: 'google.net', },
+                                ].map((o, k) =>
+                                    <li key={k} className="footer_category_item">
+                                        {o.name}&nbsp;:&nbsp;
+                                        <a
+                                            href="https://example.com" target="_blank" rel="noopener noreferrer"
+                                            className="footer_link"
+                                        >
+                                            {o.url}
+                                        </a>
+                                    </li>
+                                )
+                            }
+                        </ul>
+                    </div>
+                </div>
             </footer>
         </div>
     );
