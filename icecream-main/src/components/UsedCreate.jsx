@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabase/supabase";
 import { useImage } from "../hooks/useImage";
@@ -21,8 +21,9 @@ export function UsedCreate() {
     const [category, setCategory] = useState("");
 
     // useImage 훅
-    const { images, setImages, getImages } = useImage();
+    const { images, setImages, getImages, initImage } = useImage();
     const [fileCount, setFileCount] = useState(0);
+    const fileInputRef = useRef();
 
     // useUserTable 훅
     const { info: userInfo, loading, error } = useUserTable();
@@ -69,22 +70,27 @@ export function UsedCreate() {
     // images.length: 실제로 서버에 업로드 끝난 이미지 개수(useImage 훅에서 관리)
     // 이미지 업로드 개수 제한 함수
     const handleFileChange = (e) => {
-        const files = e.target.files;
+        const files = Array.from(e.target.files);
         console.log(files);
         if (files.length > 5) {
             alert("사진은 최대 5장까지만 업로드할 수 있습니다.");
-            e.target.value = ""; // 선택 취소
+            fileInputRef.current.value = ""; // 선택 취소
             return;
         }
         setFileCount(files.length);
         setImages(e); // 기존대로
     }
 
-    // // 이미지 삭제
-    // const handleRemoveImage = (removeIdx) => {
-    //     setImages(prev => prev.filter((_, idx) => idx != removeIdx));
-    //     setFileCount(prev => prev - 1);
-    // }
+
+
+    // 이미지 삭제
+    const handleRemoveImage = () => {
+        initImage([]);
+        setFileCount(0);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";   // input의 파일 선택 자체를 비움!
+        }
+    }
 
     const handleCreate = async (e) => {
         e.preventDefault();
@@ -146,7 +152,6 @@ export function UsedCreate() {
             console.log('error', error);
         } if (data && data.id) {
             //console.log(data)
-            // todo: 글작성한 카테고리로 자동 이동하게 하기
             // 숫자->문자열로 변환
             const categoryString = CATEGORY_MAP[category];
             const newItem = data.id;
@@ -226,6 +231,7 @@ export function UsedCreate() {
                         type="file"
                         multiple
                         accept="image/*"
+                        ref={fileInputRef}
                         onChange={handleFileChange}
                     />
                     <div className="form-text mt-1 text-muted" style={{ fontSize: 14 }}>
@@ -250,17 +256,13 @@ export function UsedCreate() {
                             />
                         ))}
                     </div>
-                    {/* <Button
+                    <Button className="mt-2"
                         variant="outline-secondary"
                         size="sm"
-                        onClick={() => {
-                            setImages([]);
-                            setFileCount(0);
-                            // input ref로 value도 초기화하면 완벽 (선택적)
-                        }}
+                        onClick={handleRemoveImage}
                     >
                         전체 이미지 다시 선택
-                    </Button> */}
+                    </Button>
                 </Form.Group >
 
                 <div className="d-grid gap-2 mt-4">

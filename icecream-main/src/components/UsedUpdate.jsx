@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../supabase/supabase";
 import { useImage } from "../hooks/useImage";
@@ -30,8 +30,9 @@ export function UsedUpdate() {
     const [category, setCategory] = useState("");
 
     // useImage 훅
-    const { images, setImages, getImages } = useImage();
+    const { images, setImages, getImages, initImage } = useImage();
     const [fileCount, setFileCount] = useState(0);
+    const fileInputRef = useRef();
 
     // useUserTable 훅
     const { info: userInfo, loading, error } = useUserTable();
@@ -101,17 +102,25 @@ export function UsedUpdate() {
     // images.length: 실제로 서버에 업로드 끝난 이미지 개수(useImage 훅에서 관리)
     // 이미지 업로드 개수 제한 함수
     const handleFileChange = (e) => {
-        const files = e.target.files;
+        const files = Array.from(e.target.files);
         console.log(files);
         if (files.length > 5) {
             alert("사진은 최대 5장까지만 업로드할 수 있습니다.");
-            e.target.value = ""; // 선택 취소
+            fileInputRef.current.value="";
             return;
         }
         setFileCount(files.length);
         if (files.length > 0) {
             setExPics([]);
             setImages(e); // 기존대로
+        }
+    }
+
+    const handleRemoveImage = () => {
+        initImage([]);
+        setFileCount(0);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";   // input의 파일 선택 자체를 비움!
         }
     }
 
@@ -281,6 +290,7 @@ export function UsedUpdate() {
                         type="file"
                         multiple
                         accept="image/*"
+                        ref={fileInputRef}
                         onChange={handleFileChange}
                     />
                     <div className="form-text mt-1 text-muted" style={{ fontSize: 14 }}>
@@ -304,6 +314,13 @@ export function UsedUpdate() {
                             />
                         ))}
                     </div>
+                    <Button className="mt-2"
+                        variant="outline-secondary"
+                        size="sm"
+                        onClick={handleRemoveImage}
+                    >
+                        전체 이미지 다시 선택
+                    </Button>
                 </Form.Group>
 
                 <div className="d-grid gap-2 mt-4">

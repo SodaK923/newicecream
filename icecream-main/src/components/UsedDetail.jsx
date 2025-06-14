@@ -25,6 +25,13 @@ export function UsedDetail() {
     // 로그인한 사람의 정보
     const { info: userInfo } = useUserTable();
 
+    // 카테고리 숫자->문자열로 변환
+    const CATEGORY_MAP = {
+        4: "sell",    // 중고거래
+        5: "share",     // 구매
+        6: "buy"  // 나눔
+    };
+
     // 1. 조회수 증가 + 게시물 디테일 불러오기 (item만 의존성)
     useEffect(() => {
         const fetchDetails = async () => {
@@ -209,7 +216,8 @@ export function UsedDetail() {
         }
         if (data) {
             alert('게시글이 삭제되었습니다.');
-            navigate('/trade');
+            const categoryString = CATEGORY_MAP[detail.category_id];
+            navigate(`/trade/${categoryString}`);
         }
     }
 
@@ -381,7 +389,7 @@ export function UsedDetail() {
                 </Row>
             </Card>
 
-            <Comments productId={detail.id} categoryId={detail.category_id}/>
+            <Comments productId={detail.id} categoryId={detail.category_id} />
         </>
     );
 }
