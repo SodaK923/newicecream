@@ -104,12 +104,12 @@ export function UsedUpdate() {
     const handleFileChange = (e) => {
         const files = Array.from(e.target.files);
         console.log(files);
-        if (files.length > 5) {
+        if (images.length+files.length > 5) {
             alert("사진은 최대 5장까지만 업로드할 수 있습니다.");
             fileInputRef.current.value="";
             return;
         }
-        setFileCount(files.length);
+        setFileCount(images.length+files.length);
         if (files.length > 0) {
             setExPics([]);
             setImages(e); // 기존대로

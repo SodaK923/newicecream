@@ -11,7 +11,6 @@ import { Form, Button, FloatingLabel, Image, Spinner, InputGroup } from "react-b
 export function UsedCreate() {
     const now = new Date().toISOString();
     const navigate = useNavigate();
-    //const {item} = useParams();
 
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
@@ -28,25 +27,26 @@ export function UsedCreate() {
     // useUserTable 훅
     const { info: userInfo, loading, error } = useUserTable();
 
-    // 상세정보 테이블에서 가져올수도..
+    // useRegion 훅
     const { city, district } = useRegion();
     const location = `${city} ${district}`;
 
     // 카테고리 숫자->문자열로 변환
     const CATEGORY_MAP = {
-        4: "sell",    // 중고거래
-        5: "share",     // 구매
-        6: "buy"  // 나눔
+        4: "sell",
+        5: "share",
+        6: "buy"
     };
 
     useEffect(() => {
-        (async () => {
+        const checkLogin = async () => {
             const { user } = await getUser();
             if (!user) {
                 alert('로그인해야 글작성이 가능합니다.');
                 navigate('/login');
             }
-        })();
+        }
+        checkLogin();
     }, []);
 
 
@@ -72,13 +72,13 @@ export function UsedCreate() {
     const handleFileChange = (e) => {
         const files = Array.from(e.target.files);
         console.log(files);
-        if (files.length > 5) {
+        if (images.length+files.length > 5) {
             alert("사진은 최대 5장까지만 업로드할 수 있습니다.");
             fileInputRef.current.value = ""; // 선택 취소
             return;
         }
-        setFileCount(files.length);
-        setImages(e); // 기존대로
+        setFileCount(images.length+files.length);
+        setImages(e);
     }
 
 

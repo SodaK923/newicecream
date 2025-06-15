@@ -20,7 +20,10 @@ export function UsedDetail() {
     const [isLiking, setIsLiking] = useState(false);    // 처리중
     const [loading, setLoading] = useState(true);
 
+    // 글쓰기 메뉴
+    const [showRegisterMenu, setShowRegisterMenu] = useState(false);
 
+    // 상세게시물 정보 담음
     const [detail, setDetail] = useState(null);
     // 로그인한 사람의 정보
     const { info: userInfo } = useUserTable();
@@ -32,12 +35,21 @@ export function UsedDetail() {
         6: "buy"  // 나눔
     };
 
-    // 1. 조회수 증가 + 게시물 디테일 불러오기 (item만 의존성)
+    const handleToggleMenu = () => {
+        setShowRegisterMenu(prev => !prev);
+    };
+    const handleRegisterNavigate = (path) => {
+        console.log('Navigate to', path);
+        setShowRegisterMenu(false);
+        navigate(path);  // 이 부분 추가 필요
+    };
+
+    // 게시물정보(item)
     useEffect(() => {
         const fetchDetails = async () => {
             if (!item) return;
             try {
-                // 1) 기존 조회수 가져오기
+                // 기존 조회수
                 const { data: preData, error: preError } = await supabase
                     .from('trades')
                     .select('cnt')
@@ -47,13 +59,13 @@ export function UsedDetail() {
                     console.log('increaseView error: ', preError);
                     return;
                 }
-                // 2) +1 업데이트
+                // +1
                 await supabase
                     .from('trades')
                     .update({ cnt: preData.cnt + 1 })
                     .eq('id', item);
 
-                // 3) 디테일 다시 불러오기
+                // 게시물 불러오기
                 const { data: detailData, error } = await supabase
                     .from('trades')
                     .select('*, categories(*), users(id, name)')
@@ -75,7 +87,7 @@ export function UsedDetail() {
         fetchDetails();
     }, [item]);
 
-    // 2. 좋아요 수/상태 등은 detail, userInfo 의존성으로 따로 관리
+    // 좋아요(detail, userInfo)
     useEffect(() => {
         const fetchLikes = async () => {
             if (!detail) return;
@@ -262,26 +274,25 @@ export function UsedDetail() {
                 <div>
                     <Button
                         variant={isLiked ? "danger" : "outline-danger"}
-                        size="sm"
+                        // size="sm"
                         onClick={handleLikeToggle}
                         disabled={isLiking}
-                        style={{ padding: "2px 12px", fontSize: 16 }}
+                        // style={{ padding: "2px 12px", fontSize: 16 }}
                     >
                         {isLiked ? "❤️" : "🤍"}
                         {isLiked ? " 좋아요 취소" : " 좋아요"}
                     </Button>
-                    {detail.category_id === 4 && (<Button size="sm" style={{ padding: "2px 12px", fontSize: 16 }} onClick={makeChats}>구매하기</Button>)}
+                    {/* {detail.category_id === 4 && (<Button onClick={makeChats}>구매하기</Button>)}
                     {detail.category_id === 5 && (<Button onClick={makeChats}>나눔받기</Button>)}
-                    {detail.category_id === 6 && (<Button onClick={makeChats}>팔기</Button>)}
+                    {detail.category_id === 6 && (<Button onClick={makeChats}>팔기</Button>)} */}
+                    <Button onClick={makeChats}>✉️ 쪽지</Button>
                 </div>
             );
         }
     };
 
 
-
-
-    // todo: 글 수정
+    // 글 수정 버튼
     const handleUpdate = () => {
         navigate('update');
     }
@@ -314,6 +325,48 @@ export function UsedDetail() {
 
     return (
         <>
+        <div
+                className="position-fixed bottom-0 start-0 m-4"
+                style={{ zIndex: 1050 }}
+            >
+                <Button
+                    variant="danger"
+                    className="d-flex justify-content-center align-items-center shadow rounded-3"
+                    style={{ width: '100px', height: '50px', whiteSpace: 'nowrap' }}
+                    onClick={handleToggleMenu}
+                >
+                    + 글쓰기
+                </Button>
+
+                {showRegisterMenu && (
+                    <div
+                        className="bg-danger rounded-3 shadow p-2 mt-3 position-absolute start-0"
+                        style={{
+                            bottom: '70px',
+                            width: '200px',
+                            userSelect: 'none',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                        }}
+                    >
+                        {['거래 등록', '공구 등록'].map((label, idx) => {
+                            const path = label === '거래 등록'
+                                ? '/trade/deal/register'
+                                : '/trade/gonggu/register';
+
+                            return (
+                                <Button
+                                    key={idx}
+                                    variant="danger"
+                                    className="w-100 text-start mb-2 rounded-2"
+                                    onClick={() => handleRegisterNavigate(path)}
+                                >
+                                    {label}
+                                </Button>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
             <Card className="border-0" style={{ maxWidth: 1100, margin: "30px auto", borderRadius: 18 }}>
                 <Row className="g-0">
                     {/* 왼쪽: 이미지 */}
