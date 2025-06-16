@@ -88,7 +88,7 @@ export function UsedCreate() {
         initImage([]);
         setFileCount(0);
         if (fileInputRef.current) {
-            fileInputRef.current.value = "";   // input의 파일 선택 자체를 비움!
+            fileInputRef.current.value = "";   // input의 파일 선택 자체를 비움
         }
     }
 
@@ -114,7 +114,7 @@ export function UsedCreate() {
             alert("제목과 내용을 모두 작성해주세요.");
             return;
         }
-        if (category !== "5" && !price) { // '나눔' 아니면 가격 필요
+        if (category !== "5" && !price) {
             alert("가격을 입력해주세요.");
             return;
         }

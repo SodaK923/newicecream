@@ -175,45 +175,8 @@ export function UsedDetail() {
     };
 
 
-
-    // 조회수 증가
-    // useEffect(() => {
-    //     if (!item) return;
-    //     const increaseView = async () => {
-    //         const { data, error } = await supabase
-    //             .from('trades')
-    //             .select('cnt')
-    //             .eq('id', item)
-    //             .single();
-    //         if (error) {
-    //             console.log('increaseView error: ', error);
-    //             return;
-    //         }
-    //         if (data) {
-    //             // 조회수 증가
-    //             await supabase
-    //                 .from('trades')
-    //                 .update({ cnt: data.cnt + 1 })
-    //                 .eq('id', item);
-
-    //             // 증가된 조회수 반영
-    //             const { data: updateData } = await supabase
-    //                 .from('trades')
-    //                 .select('*, categoires(name), users(name)')
-    //                 .eq('id', item)
-    //                 .single()
-    //             if (updateData) {
-    //                 setDetail(updateData);
-    //             }
-    //         }
-    //     }
-    //     increaseView();
-    // }, [item]);
-
-
     // 글 삭제
     const deleteDetails = async () => {
-        // 취소(false)를 눌러야 true가 되므로 !confirm
         if (!confirm('게시글을 삭제할까요?')) {
             return;
         }
@@ -236,6 +199,7 @@ export function UsedDetail() {
 
     // 구매하기/나눔받기/팔기 -> 판매자 채팅으로
     const makeChats = async () => {
+        if(!confirm('거래 요청 메시지를 보낼까요?')) return;
         const { data, error } = await supabase
             .from('chats')
             .insert([{
@@ -253,7 +217,7 @@ export function UsedDetail() {
         }
         if (data) {
             console.log('data: ', data);
-            alert('채팅이 전송되었습니다.');
+            //alert('채팅이 전송되었습니다.');
             navigate(`/my/talk/${detail?.user_id}`)
         }
     }
@@ -264,8 +228,8 @@ export function UsedDetail() {
         if (userInfo && userInfo.id === detail.user_id) {
             return (
                 <div>
-                    <Button onClick={handleUpdate}>글수정</Button>
-                    <Button onClick={deleteDetails}>삭제</Button>
+                    <Button variant="outline-secondary" onClick={handleUpdate}>글수정</Button>
+                    <Button variant="outline-danger" onClick={deleteDetails}>삭제</Button>
                 </div>
             );
         } else {
@@ -285,7 +249,7 @@ export function UsedDetail() {
                     {/* {detail.category_id === 4 && (<Button onClick={makeChats}>구매하기</Button>)}
                     {detail.category_id === 5 && (<Button onClick={makeChats}>나눔받기</Button>)}
                     {detail.category_id === 6 && (<Button onClick={makeChats}>팔기</Button>)} */}
-                    <Button onClick={makeChats}>✉️ 쪽지</Button>
+                    <Button variant="outline-primary" onClick={makeChats}>✉️ 쪽지</Button>
                 </div>
             );
         }
