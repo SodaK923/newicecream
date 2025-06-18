@@ -88,23 +88,23 @@ export function UsedSell() {
         }
     }, [shadowRoot]);
 
-    useEffect(() => {
-        const fetchPosts = async () => {
-            const { data, error } = await supabase
-                .from('trades')
-                .select('*,categories(name), users(name)')
-                .eq('category_id', 4)
-                .eq('super_category_id', 3)
-                .order('create_date', { ascending: false });
-            if (error) {
-                console.log("error: ", error);
-            }
-            if (data) {
-                setPosts(data);
-            }
-        }
-        fetchPosts();
-    }, []);
+    // useEffect(() => {
+    //     const fetchPosts = async () => {
+    //         const { data, error } = await supabase
+    //             .from('trades')
+    //             .select('*,categories(name), users(name)')
+    //             .eq('category_id', 4)
+    //             .eq('super_category_id', 3)
+    //             .order('create_date', { ascending: false });
+    //         if (error) {
+    //             console.log("error: ", error);
+    //         }
+    //         if (data) {
+    //             setPosts(data);
+    //         }
+    //     }
+    //     fetchPosts();
+    // }, []);
 
     // 글쓰기 등록버튼 처리
     const handleToggleMenu = () => {

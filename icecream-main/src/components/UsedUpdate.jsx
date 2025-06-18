@@ -111,7 +111,7 @@ export function UsedUpdate() {
         }
         setFileCount(images.length+files.length);
         if (files.length > 0) {
-            setExPics([]);
+            //setExPics([]);
             setImages(e); // 기존대로
         }
     }
@@ -127,11 +127,11 @@ export function UsedUpdate() {
     // 새로 업로드한 이미지가 있으면 새이미지 저장
     const finalPics = (images.length > 0 ? images : exPics).filter(Boolean);
 
-    // 스토리지 경로 안붙었으면 붙이고 붙었으면 냅둠
-    const getFinalUrl = (img) => {
-        if (!img) return null;
-        return img.startsWith("http") ? img : getImages(img);
-    };
+    // // 스토리지 경로 안붙었으면 붙이고 붙었으면 냅둠
+    // const getFinalUrl = (img) => {
+    //     if (!img) return null;
+    //     return img.startsWith("http") ? img : getImages(img);
+    // };
 
 
     const handleUpdate = async (e) => {
@@ -167,12 +167,11 @@ export function UsedUpdate() {
                 price: category === "5" ? 0 : Number(price),
                 category_id: Number(category),
                 location,
-                // 슈퍼베이스 경로 붙여줘야함
-                main_img: getFinalUrl(finalPics[0]),
-                detail_img1: getFinalUrl(finalPics[1]),
-                detail_img2: getFinalUrl(finalPics[2]),
-                detail_img3: getFinalUrl(finalPics[3]),
-                detail_img4: getFinalUrl(finalPics[4]),
+                main_img: images[0] ? images[0] : null,
+                detail_img1: images[1] ? images[1] : null,
+                detail_img2: images[2] ? images[2] : null,
+                detail_img3: images[3] ? images[3] : null,
+                detail_img4: images[4] ? images[4] : null,
                 update_date: now
             })
             .eq('id', item)
@@ -271,7 +270,7 @@ export function UsedUpdate() {
                             exPics.map((img, i) => (
                                 <Image
                                     key={i}
-                                    src={img}
+                                    src={getImages(img)}
                                     alt={`기존 이미지 ${i + 1}`}
                                     style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: 12, border: "1px solid #eee" }}
                                     thumbnail

@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useUserTable } from "../hooks/useUserTable";
 import { Carousel, Row, Col, Button, Badge, Card } from 'react-bootstrap';
 import { Comments } from "./Comments";
+import { useImage } from "../hooks/useImage";
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
@@ -19,6 +20,7 @@ export function UsedDetail() {
     const [isLiked, setIsLiked] = useState(false);      // 내가 눌렀는지
     const [isLiking, setIsLiking] = useState(false);    // 처리중
     const [loading, setLoading] = useState(true);
+    const {getImages} = useImage();
 
     // 글쓰기 메뉴
     const [showRegisterMenu, setShowRegisterMenu] = useState(false);
@@ -345,7 +347,7 @@ export function UsedDetail() {
                                     images.map((img, idx) => (
                                         <Carousel.Item key={idx}>
                                             <img
-                                                src={img}
+                                                src={getImages(img)}
                                                 alt={`상세 이미지 ${idx + 1}`}
                                                 style={{
                                                     width: "100%",
